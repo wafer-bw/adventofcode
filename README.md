@@ -1,2 +1,2 @@
 # adventofcode
-My Advent of Code solutions repo
+My [Advent of Code](https://adventofcode.com) solutions repo.
