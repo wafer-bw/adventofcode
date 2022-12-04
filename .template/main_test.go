@@ -13,10 +13,10 @@ func TestSolve(t *testing.T) {
 
 	t.Run("solve correctly using sample input", func(t *testing.T) {
 		t.Parallel()
-		require.Equal(t, 70, solve(reader.Read(pather.Path(puzzleID, true, true))))
+		require.Equal(t, -1, solve(reader.Read(pather.Path(puzzleID, true, true))))
 	})
 	t.Run("solve correctly using full input", func(t *testing.T) {
 		t.Parallel()
-		require.Equal(t, 2499, solve(reader.Read(pather.Path(puzzleID, false, true))))
+		require.Equal(t, -1, solve(reader.Read(pather.Path(puzzleID, false, true))))
 	})
 }

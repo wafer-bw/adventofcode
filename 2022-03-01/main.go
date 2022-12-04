@@ -4,11 +4,12 @@ import (
 	"log"
 	"strings"
 
+	"github.com/wafer-bw/adventofcode/tools/pather"
 	"github.com/wafer-bw/adventofcode/tools/reader"
 )
 
 const (
-	input       string = "inputs/2022-03.txt"
+	puzzleID    string = "2022-03"
 	upperOffset int    = 38
 	lowerOffset int    = 96
 )
@@ -45,5 +46,5 @@ func solve(lines []string) int {
 }
 
 func main() {
-	log.Println(solve(reader.Read(input)))
+	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
 }

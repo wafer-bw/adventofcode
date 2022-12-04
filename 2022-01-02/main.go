@@ -4,11 +4,12 @@ import (
 	"log"
 	"strconv"
 
+	"github.com/wafer-bw/adventofcode/tools/pather"
 	"github.com/wafer-bw/adventofcode/tools/reader"
 	"golang.org/x/exp/slices"
 )
 
-const input string = "inputs/2022-01.txt"
+const puzzleID string = "2022-01"
 
 func solve(lines []string) int {
 	i := 1
@@ -40,5 +41,5 @@ func solve(lines []string) int {
 }
 
 func main() {
-	log.Println(solve(reader.Read(input)))
+	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
 }

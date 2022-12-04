@@ -4,10 +4,11 @@ import (
 	"log"
 	"strings"
 
+	"github.com/wafer-bw/adventofcode/tools/pather"
 	"github.com/wafer-bw/adventofcode/tools/reader"
 )
 
-const input string = "inputs/2022-02.txt"
+const puzzleID string = "2022-02"
 
 var (
 	shapeNames = map[string]string{
@@ -30,7 +31,7 @@ var (
 )
 
 func main() {
-	log.Println(solve(reader.Read(input)))
+	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
 }
 
 func solve(lines []string) int {
