@@ -1,13 +1,16 @@
 package pather
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func Path(puzzleID string, sample bool, test bool) string {
 	p := ""
 	if test {
-		p += "../"
+		p += "../../"
 	}
-	p += fmt.Sprintf("inputs/%s", puzzleID)
+	p += fmt.Sprintf("inputs/%s", strings.Replace(puzzleID, "-", "/", 1))
 	if sample {
 		p += "-sample"
 	}
