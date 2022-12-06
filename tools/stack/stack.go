@@ -11,6 +11,13 @@ func Pop[T any](slice *[]T) T {
 	return res
 }
 
+func PopBack[T any](slice *[]T) T {
+	s := *slice
+	res := s[0]
+	*slice = s[1:]
+	return res
+}
+
 func PushN[T any](slice *[]T, i ...T) {
 	*slice = append(*slice, i...)
 }
