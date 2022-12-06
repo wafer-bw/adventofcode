@@ -5,6 +5,7 @@ import (
 
 	"github.com/wafer-bw/adventofcode/tools/pather"
 	"github.com/wafer-bw/adventofcode/tools/reader"
+	"github.com/wafer-bw/adventofcode/tools/set"
 	"github.com/wafer-bw/adventofcode/tools/stack"
 )
 
@@ -24,7 +25,7 @@ func solve(lines []string) int {
 			stack.PopBack(&marker)
 		}
 
-		if len(marker) == markerLen && allUnique(marker) {
+		if len(marker) == markerLen && set.AllUnique(marker) {
 			return i + 1
 		}
 	}
@@ -34,15 +35,4 @@ func solve(lines []string) int {
 
 func main() {
 	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
-}
-
-func allUnique(list []string) bool {
-	m := map[string]struct{}{}
-	for _, v := range list {
-		if _, ok := m[v]; ok {
-			return false
-		}
-		m[v] = struct{}{}
-	}
-	return true
 }
