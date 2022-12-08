@@ -98,7 +98,7 @@ func solve(lines []string) int {
 }
 
 func main() {
-	log.Println(solve(reader.Read(pather.Path(puzzleID, true, false))))
+	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
 }
 
 func getDirToDelete(fs *fs, need int) int {
