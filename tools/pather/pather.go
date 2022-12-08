@@ -10,7 +10,7 @@ func Path(puzzleID string, sample bool, test bool) string {
 	if test {
 		p += "../../"
 	}
-	p += fmt.Sprintf("inputs/%s", strings.Replace(puzzleID, "-", "/", 1))
+	p += fmt.Sprintf(".inputs/%s", strings.Replace(puzzleID, "-", "/", 1))
 	if sample {
 		p += "-sample"
 	}
