@@ -1,3 +1,5 @@
+// https://adventofcode.com/2022/day/7#part2
+
 package main
 
 import (
@@ -47,8 +49,6 @@ func solve(lines []string) int {
 	cmd, trg := "", ""
 	at := filesystem
 	for _, ln := range lines {
-		// log.Println(at.name, ln)
-
 		if strings.HasPrefix(ln, "$ ") {
 			cmd, trg = getCommand(ln)
 			switch cmd {
@@ -66,7 +66,6 @@ func solve(lines []string) int {
 					})
 					at = at.blw[len(at.blw)-1]
 				}
-				// cmd, trg = "", ""
 				continue
 			}
 		} else if cmd != "" {
