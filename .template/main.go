@@ -1,3 +1,5 @@
+// https://adventofcode.com/XXXX/day/X
+
 package main
 
 import (
