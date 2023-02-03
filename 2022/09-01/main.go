@@ -5,12 +5,12 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
 	"strconv"
 	"strings"
 
 	"github.com/wafer-bw/adventofcode/tools/pather"
 	"github.com/wafer-bw/adventofcode/tools/reader"
+	"github.com/wafer-bw/adventofcode/tools/vector"
 )
 
 const (
@@ -18,24 +18,10 @@ const (
 	tailMovespeed int    = 1
 )
 
-type v2 struct{ x, y int }
-
-func (a v2) orthoDistance(b v2) v2 {
-	dx := a.x - b.x
-	dy := a.y - b.y
-	return v2{dx, dy}
-}
-
-func (a v2) distance(b v2) float64 {
-	dx := a.x - b.x
-	dy := a.y - b.y
-	return math.Sqrt(float64(dx*dx) + float64(dy*dy))
-}
-
 func solve(lines []string) int {
 	m := map[int]map[int]struct{}{}
-	h := v2{0, 0}
-	t := v2{0, 0}
+	h := vector.V2{0, 0}
+	t := vector.V2{0, 0}
 
 	for _, ln := range lines {
 		parts := strings.Split(ln, " ")
@@ -43,18 +29,18 @@ func solve(lines []string) int {
 		steps, _ := strconv.Atoi(parts[1])
 
 		for i := 0; i < steps; i++ {
-			if _, ok := m[t.x]; !ok {
-				m[t.x] = map[int]struct{}{}
+			if _, ok := m[t.X]; !ok {
+				m[t.X] = map[int]struct{}{}
 			}
-			if _, ok := m[t.x][t.y]; !ok {
-				m[t.x][t.y] = struct{}{}
+			if _, ok := m[t.X][t.Y]; !ok {
+				m[t.X][t.Y] = struct{}{}
 			}
 
 			h = move(h, dir)
-			separation := t.orthoDistance(h)
-			distance := t.distance(h)
+			separation := t.OrthoDistance(h)
+			distance := t.Distance(h)
 			if distance >= 2 {
-				t = translate(t, v2{-separation.x, -separation.y}, tailMovespeed)
+				t = translate(t, vector.V2{-separation.X, -separation.Y}, tailMovespeed)
 			}
 		}
 	}
@@ -69,14 +55,14 @@ func solve(lines []string) int {
 	return len(positions)
 }
 
-func draw(m map[int]map[int]struct{}, h v2, t v2) {
+func draw(m map[int]map[int]struct{}, h vector.V2, t vector.V2) {
 	for y := 6; y >= 0; y-- {
 		for x := 0; x < 6; x++ {
-			if x == h.x && y == h.y {
+			if x == h.X && y == h.Y {
 				fmt.Print("H")
 				continue
 			}
-			if x == t.x && y == t.y {
+			if x == t.X && y == t.Y {
 				fmt.Print("T")
 				continue
 			}
@@ -95,32 +81,32 @@ func draw(m map[int]map[int]struct{}, h v2, t v2) {
 	}
 }
 
-func translate(pos, dir v2, max int) v2 {
-	if dir.x > max {
-		dir.x = max
-	} else if dir.x < -max {
-		dir.x = -max
+func translate(pos, dir vector.V2, max int) vector.V2 {
+	if dir.X > max {
+		dir.X = max
+	} else if dir.X < -max {
+		dir.X = -max
 	}
 
-	if dir.y > max {
-		dir.y = max
-	} else if dir.y < -max {
-		dir.y = -max
+	if dir.Y > max {
+		dir.Y = max
+	} else if dir.Y < -max {
+		dir.Y = -max
 	}
 
-	return v2{pos.x + dir.x, pos.y + dir.y}
+	return vector.V2{pos.X + dir.X, pos.Y + dir.Y}
 }
 
-func move(pos v2, dir string) v2 {
+func move(pos vector.V2, dir string) vector.V2 {
 	switch dir {
 	case "U":
-		pos.y++
+		pos.Y++
 	case "R":
-		pos.x++
+		pos.X++
 	case "D":
-		pos.y--
+		pos.Y--
 	case "L":
-		pos.x--
+		pos.X--
 	}
 
 	return pos
