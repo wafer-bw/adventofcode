@@ -3,20 +3,23 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"math/rand"
+	"os"
 
 	"github.com/wafer-bw/adventofcode/tools/alphanum"
 	"github.com/wafer-bw/adventofcode/tools/pather"
 	"github.com/wafer-bw/adventofcode/tools/reader"
+	"github.com/wafer-bw/adventofcode/tools/stack"
 	"github.com/wafer-bw/adventofcode/tools/vector"
 	"golang.org/x/exp/slices"
 )
 
 const (
 	puzzleID string = "2022-12"
-	maxClimb        = 1
+	maxClimb int    = 1
 )
 
 var (
@@ -83,10 +86,6 @@ func setup(lines []string) (start, end vector.V2, heightMap HeightMap) {
 	return
 }
 
-func heightAt(pos vector.V2, heightMap HeightMap) int {
-	return heightMap[pos.Y][pos.X]
-}
-
 func brute(start, end vector.V2, heightMap HeightMap) int {
 	pos := start
 	maxMoves := len(heightMap) * len(heightMap[0])
@@ -97,8 +96,20 @@ func brute(start, end vector.V2, heightMap HeightMap) int {
 		selectedMove, err := decideMove(potentialMoves)
 		if err != nil {
 			log.Printf("hit dead end at %s", pos)
-			// TODO: backtrack
-			return -1
+			for n := len(moves) - 1; n >= 0; n-- {
+				oldPos := pos
+				pos = pos.Sub(moves[n])
+				log.Printf("backtrack move #%d: %s from %s to %s", len(moves), moves[n], oldPos, pos)
+				pot := getPotentialMoves(pos, heightMap, visited)
+				stack.Pop(&visited)
+				stack.Pop(&moves)
+				if len(pot) == 0 {
+					continue
+				} else {
+					potentialMoves = pot
+					selectedMove, _ = decideMove(potentialMoves)
+				}
+			}
 		}
 
 		oldPos := pos
@@ -113,8 +124,10 @@ func brute(start, end vector.V2, heightMap HeightMap) int {
 			moveDirs = append(moveDirs, m.ToDir())
 		}
 		log.Println(moveDirs)
-		log.Println()
 
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Println("")
+		reader.ReadString('\n')
 	}
 
 	if len(moves) > maxMoves {
