@@ -31,6 +31,10 @@ func (a V2) Sub(b V2) V2 {
 	return V2{a.X - b.X, a.Y - b.Y}
 }
 
+func (a V2) Neg() V2 {
+	return V2{-a.X, -a.Y}
+}
+
 func (a V2) ToDir() string {
 	switch {
 	case a.X == 0 && a.Y == -1:
