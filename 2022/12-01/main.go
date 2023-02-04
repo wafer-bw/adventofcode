@@ -37,7 +37,7 @@ func (h HeightMap) HeightAt(pos vector.V2) int {
 }
 
 func (h HeightMap) OutOfBounds(pos vector.V2) bool {
-	return pos.X < 0 || pos.Y < 0 || pos.X >= len(h[0])-1 || pos.Y >= len(h)-1
+	return pos.X < 0 || pos.Y < 0 || pos.X >= len(h[0]) || pos.Y >= len(h)
 }
 
 func (h HeightMap) TooHighToClimb(from, to vector.V2, max int) bool {
@@ -62,7 +62,7 @@ func solve(lines []string) int {
 }
 
 func main() {
-	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
+	log.Println(solve(reader.Read(pather.Path(puzzleID, true, false))))
 }
 
 func setup(lines []string) (start, end vector.V2, heightMap HeightMap) {
@@ -88,26 +88,30 @@ func setup(lines []string) (start, end vector.V2, heightMap HeightMap) {
 
 func brute(start, end vector.V2, heightMap HeightMap) int {
 	pos := start
-	maxMoves := len(heightMap) * len(heightMap[0])
+	maxMoves := 32
 	moves, visited := []vector.V2{}, []vector.V2{start}
+
+	log.Println("map:\n", heightMap)
+	log.Printf("%v to %v", start, end)
 
 	for pos != end {
 		potentialMoves := getPotentialMoves(pos, heightMap, visited)
 		selectedMove, err := decideMove(potentialMoves)
-		if err != nil {
+		if err != nil || len(moves) >= maxMoves {
 			log.Printf("hit dead end at %s", pos)
 			for n := len(moves) - 1; n >= 0; n-- {
 				oldPos := pos
 				pos = pos.Sub(moves[n])
-				log.Printf("backtrack move #%d: %s from %s to %s", len(moves), moves[n], oldPos, pos)
+				log.Println()
+				log.Printf("backtrack move #%d: %s from %s to %s", len(moves), moves[n].Neg().ToDir(), oldPos, pos)
 				pot := getPotentialMoves(pos, heightMap, visited)
 				stack.Pop(&visited)
 				stack.Pop(&moves)
 				if len(pot) == 0 {
 					continue
 				} else {
-					potentialMoves = pot
-					selectedMove, _ = decideMove(potentialMoves)
+					selectedMove, _ = decideMove(pot)
+					break
 				}
 			}
 		}
@@ -119,12 +123,13 @@ func brute(start, end vector.V2, heightMap HeightMap) int {
 
 		log.Printf("move #%d: %s from %s to %s", len(moves), selectedMove.ToDir(), oldPos, pos)
 		log.Println(visited)
+		log.Println()
+
 		moveDirs := []string{}
 		for _, m := range moves {
 			moveDirs = append(moveDirs, m.ToDir())
 		}
 		log.Println(moveDirs)
-
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Println("")
 		reader.ReadString('\n')
