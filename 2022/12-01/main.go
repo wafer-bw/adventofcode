@@ -3,16 +3,12 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"log"
-	"math/rand"
-	"os"
 
 	"github.com/wafer-bw/adventofcode/tools/alphanum"
 	"github.com/wafer-bw/adventofcode/tools/pather"
 	"github.com/wafer-bw/adventofcode/tools/reader"
-	"github.com/wafer-bw/adventofcode/tools/stack"
 	"github.com/wafer-bw/adventofcode/tools/vector"
 	"golang.org/x/exp/slices"
 )
@@ -37,7 +33,7 @@ func (h HeightMap) HeightAt(pos vector.V2) int {
 }
 
 func (h HeightMap) OutOfBounds(pos vector.V2) bool {
-	return pos.X < 0 || pos.Y < 0 || pos.X >= len(h[0]) || pos.Y >= len(h)
+	return pos.Y < 0 || pos.X < 0 || pos.Y >= len(h) || pos.X >= len(h[0])
 }
 
 func (h HeightMap) TooHighToClimb(from, to vector.V2, max int) bool {
@@ -46,9 +42,9 @@ func (h HeightMap) TooHighToClimb(from, to vector.V2, max int) bool {
 
 func (h HeightMap) String() string {
 	msg := ""
-	for _, x := range h {
-		for _, y := range x {
-			msg += string(alphanum.ToChar(y))
+	for _, y := range h {
+		for _, x := range y {
+			msg += string(alphanum.ToChar(x))
 		}
 		msg += "\n"
 	}
@@ -56,13 +52,12 @@ func (h HeightMap) String() string {
 }
 
 func solve(lines []string) int {
-	// log.SetOutput(io.Discard)
 	start, end, heightMap := setup(lines)
-	return brute(start, end, heightMap)
+	return wander(start, end, heightMap)
 }
 
 func main() {
-	log.Println(solve(reader.Read(pather.Path(puzzleID, true, false))))
+	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
 }
 
 func setup(lines []string) (start, end vector.V2, heightMap HeightMap) {
@@ -86,60 +81,45 @@ func setup(lines []string) (start, end vector.V2, heightMap HeightMap) {
 	return
 }
 
-func brute(start, end vector.V2, heightMap HeightMap) int {
-	pos := start
-	maxMoves := 32
-	moves, visited := []vector.V2{}, []vector.V2{start}
+func wander(start, end vector.V2, heightMap HeightMap) int {
+	step, lowest := 0, -1
+	paths := [][]vector.V2{{start}}
 
-	log.Println("map:\n", heightMap)
-	log.Printf("%v to %v", start, end)
+	fmt.Printf("map:\n%s\n", heightMap)
+	fmt.Printf("%v to %v\n\n", start, end)
 
-	for pos != end {
-		potentialMoves := getPotentialMoves(pos, heightMap, visited)
-		selectedMove, err := decideMove(potentialMoves)
-		if err != nil || len(moves) >= maxMoves {
-			log.Printf("hit dead end at %s", pos)
-			for n := len(moves) - 1; n >= 0; n-- {
-				oldPos := pos
-				pos = pos.Sub(moves[n])
-				log.Println()
-				log.Printf("backtrack move #%d: %s from %s to %s", len(moves), moves[n].Neg().ToDir(), oldPos, pos)
-				pot := getPotentialMoves(pos, heightMap, visited)
-				stack.Pop(&visited)
-				stack.Pop(&moves)
-				if len(pot) == 0 {
-					continue
-				} else {
-					selectedMove, _ = decideMove(pot)
-					break
-				}
+	for len(paths) > 0 {
+		step++
+		c := len(paths)
+
+		newPaths := [][]vector.V2{}
+		for id := 0; id < c; id++ {
+			path := paths[id]
+			last := path[len(path)-1]
+
+			if last == end && (lowest == -1 || len(path) < lowest) {
+				lowest = len(path)
+				continue
+			}
+
+			potentialMoves := getPotentialMoves(last, heightMap, path)
+			for _, move := range potentialMoves {
+				next := last.Add(move)
+				// TODO: Why does newPath := append(path, next) add the same ending to all new paths?
+				newPath := append([]vector.V2{}, append(path, next)...)
+				// lookAhead := getPotentialMoves(next, heightMap, newPath)
+				// if len(lookAhead) == 0 {
+				// 	continue
+				// }
+				newPaths = append([][]vector.V2{}, append(newPaths, newPath)...)
+				// TODO: need a way to cut down on number of active paths if possible
 			}
 		}
-
-		oldPos := pos
-		pos = pos.Add(selectedMove)
-		visited = append(visited, pos)
-		moves = append(moves, selectedMove)
-
-		log.Printf("move #%d: %s from %s to %s", len(moves), selectedMove.ToDir(), oldPos, pos)
-		log.Println(visited)
-		log.Println()
-
-		moveDirs := []string{}
-		for _, m := range moves {
-			moveDirs = append(moveDirs, m.ToDir())
-		}
-		log.Println(moveDirs)
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("")
-		reader.ReadString('\n')
+		paths = newPaths
+		log.Printf("%d: currently have %d paths", step, len(paths))
 	}
 
-	if len(moves) > maxMoves {
-		return -1
-	}
-
-	return len(moves)
+	return lowest - 1
 }
 
 func getPotentialMoves(pos vector.V2, h HeightMap, visited []vector.V2) []vector.V2 {
@@ -147,13 +127,10 @@ func getPotentialMoves(pos vector.V2, h HeightMap, visited []vector.V2) []vector
 	for _, dir := range directions {
 		target := pos.Add(dir)
 		if h.OutOfBounds(target) {
-			log.Printf("%s is out of bounds", dir.ToDir())
 			continue
 		} else if h.TooHighToClimb(pos, target, maxClimb) {
-			log.Printf("%s is too high (%d)", dir.ToDir(), h.HeightAt(pos)-h.HeightAt(target))
 			continue
 		} else if alreadyVisited(target, visited) {
-			log.Printf("%s has already been visited", target)
 			continue
 		}
 
@@ -163,15 +140,62 @@ func getPotentialMoves(pos vector.V2, h HeightMap, visited []vector.V2) []vector
 	return potentialMoves
 }
 
-func decideMove(potentialMoves []vector.V2) (vector.V2, error) {
-	if len(potentialMoves) == 0 {
-		return vector.V2{}, fmt.Errorf("no potential moves")
-	} else if len(potentialMoves) == 1 {
-		return potentialMoves[0], nil
-	}
-	return potentialMoves[rand.Intn(len(potentialMoves)-1)], nil
-}
-
 func alreadyVisited(pos vector.V2, visited []vector.V2) bool {
 	return slices.Contains(visited, pos)
 }
+
+// func brute(start, end vector.V2, heightMap HeightMap) int {
+// 	pos := start
+// 	maxMoves := 32
+// 	moves, visited := []vector.V2{}, []vector.V2{start}
+
+// 	log.Println("map:\n", heightMap)
+// 	log.Printf("%v to %v", start, end)
+
+// 	for pos != end {
+// 		potentialMoves := getPotentialMoves(pos, heightMap, visited)
+// 		selectedMove, err := decideMove(potentialMoves)
+// 		if err != nil || len(moves) >= maxMoves {
+// 			log.Printf("hit dead end at %s", pos)
+// 			for n := len(moves) - 1; n >= 0; n-- {
+// 				oldPos := pos
+// 				pos = pos.Sub(moves[n])
+// 				log.Println()
+// 				log.Printf("backtrack move #%d: %s from %s to %s", len(moves), moves[n].Neg().ToDir(), oldPos, pos)
+// 				pot := getPotentialMoves(pos, heightMap, visited)
+// 				stack.Pop(&visited)
+// 				stack.Pop(&moves)
+// 				if len(pot) == 0 {
+// 					continue
+// 				} else {
+// 					selectedMove, _ = decideMove(pot)
+// 					break
+// 				}
+// 			}
+// 		}
+
+// 		oldPos := pos
+// 		pos = pos.Add(selectedMove)
+// 		visited = append(visited, pos)
+// 		moves = append(moves, selectedMove)
+
+// 		log.Printf("move #%d: %s from %s to %s", len(moves), selectedMove.ToDir(), oldPos, pos)
+// 		log.Println(visited)
+// 		log.Println()
+
+// 		moveDirs := []string{}
+// 		for _, m := range moves {
+// 			moveDirs = append(moveDirs, m.ToDir())
+// 		}
+// 		log.Println(moveDirs)
+// 		reader := bufio.NewReader(os.Stdin)
+// 		fmt.Println("")
+// 		reader.ReadString('\n')
+// 	}
+
+// 	if len(moves) > maxMoves {
+// 		return -1
+// 	}
+
+// 	return len(moves)
+// }
