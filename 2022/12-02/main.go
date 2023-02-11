@@ -52,8 +52,36 @@ func (h HeightMap) String() string {
 }
 
 func solve(lines []string) int {
-	start, end, heightMap := setup(lines)
-	return wander(start, end, heightMap)
+	checked := 0
+	starts := []vector.V2{}
+	_, end, heightMap := setup(lines)
+
+	fmt.Printf("map:\n%s\n", heightMap)
+
+	for y := range heightMap {
+		for x := range heightMap[y] {
+			if heightMap[y][x] == 1 {
+				starts = append(starts, vector.V2{X: x, Y: y})
+			}
+		}
+	}
+
+	least := -1
+	for _, start := range starts {
+		checked++
+		n, err := wander(start, end, heightMap)
+		if err == nil && (least == -1 || n < least) {
+			least = n
+		} else {
+			log.Printf("%s for start %s", err, start)
+			continue
+		}
+
+		log.Printf("current shortest path is %d", least)
+		log.Printf("checked %d/%d paths (%.2f%%)", checked, len(starts), float64(checked)/float64(len(starts))*100)
+	}
+
+	return least
 }
 
 func main() {
@@ -81,12 +109,10 @@ func setup(lines []string) (start, end vector.V2, heightMap HeightMap) {
 	return
 }
 
-func wander(start, end vector.V2, heightMap HeightMap) int {
+func wander(start, end vector.V2, heightMap HeightMap) (int, error) {
 	step, lowest := 0, -1
 	paths := [][]vector.V2{{start}}
-
-	fmt.Printf("map:\n%s\n", heightMap)
-	fmt.Printf("%v to %v\n\n", start, end)
+	log.Printf("%v to %v\n", start, end)
 
 	for len(paths) > 0 {
 		step++
@@ -118,13 +144,12 @@ func wander(start, end vector.V2, heightMap HeightMap) int {
 			}
 		}
 		paths = newPaths
-		log.Printf("%d: currently have %d paths", step, len(paths))
-		// reader := bufio.NewReader(os.Stdin)
-		// fmt.Println()
-		// reader.ReadString('\n')
 	}
 
-	return lowest - 1
+	if lowest-1 < 0 {
+		return -1, fmt.Errorf("no path found")
+	}
+	return lowest - 1, nil
 }
 
 func getPotentialMoves(pos vector.V2, h HeightMap, visited []vector.V2) []vector.V2 {
