@@ -34,7 +34,7 @@ func GetData[T any](d json.RawMessage) (T, bool) {
 func solve(lines []string) int {
 	packetPairs := getPackets(lines)
 	slices.SortFunc(packetPairs, func(a, b json.RawMessage) bool {
-		c, r := isCorrupt(0, a, b)
+		c, r := isCorrupt(a, b)
 		if !r {
 			panic("unresolved")
 		}
@@ -69,13 +69,7 @@ func getPackets(lines []string) []json.RawMessage {
 	return packets
 }
 
-func isCorrupt(depth int, left json.RawMessage, right json.RawMessage) (bool, bool) {
-	prefix := ""
-	depth = depth + 1
-	for i := 0; i < depth; i++ {
-		prefix = prefix + " "
-	}
-
+func isCorrupt(left json.RawMessage, right json.RawMessage) (bool, bool) {
 	leftInt, leftIsInt := GetData[int](left)
 	rightInt, rightIsInt := GetData[int](right)
 	leftList, leftIsList := GetData[[]json.RawMessage](left)
@@ -94,7 +88,7 @@ func isCorrupt(depth int, left json.RawMessage, right json.RawMessage) (bool, bo
 		for i := 0; i < shorterLen; i++ {
 			left := leftList[i]
 			right := rightList[i]
-			if corrupt, resolved := isCorrupt(depth, left, right); resolved {
+			if corrupt, resolved := isCorrupt(left, right); resolved {
 				return corrupt, true
 			}
 		}
@@ -106,9 +100,9 @@ func isCorrupt(depth int, left json.RawMessage, right json.RawMessage) (bool, bo
 			return false, false
 		}
 	} else if leftIsList && rightIsInt {
-		return isCorrupt(depth, left, json.RawMessage(fmt.Sprintf("[%d]", rightInt)))
+		return isCorrupt(left, json.RawMessage(fmt.Sprintf("[%d]", rightInt)))
 	} else if !leftIsList && rightIsList {
-		return isCorrupt(depth, json.RawMessage(fmt.Sprintf("[%d]", leftInt)), right)
+		return isCorrupt(json.RawMessage(fmt.Sprintf("[%d]", leftInt)), right)
 	}
 
 	return false, false
