@@ -31,14 +31,6 @@ func GetData[T any](d json.RawMessage) (T, bool) {
 	return i, false
 }
 
-func GetInt(d json.RawMessage) (int, bool) {
-	return GetData[int](d)
-}
-
-func GetList(d json.RawMessage) ([]json.RawMessage, bool) {
-	return GetData[[]json.RawMessage](d)
-}
-
 func solve(lines []string) int {
 	packetPairs := getPackets(lines)
 	slices.SortFunc(packetPairs, func(a, b json.RawMessage) bool {
@@ -84,10 +76,10 @@ func isCorrupt(depth int, left json.RawMessage, right json.RawMessage) (bool, bo
 		prefix = prefix + " "
 	}
 
-	leftInt, leftIsInt := GetInt(left)
-	rightInt, rightIsInt := GetInt(right)
-	leftList, leftIsList := GetList(left)
-	rightList, rightIsList := GetList(right)
+	leftInt, leftIsInt := GetData[int](left)
+	rightInt, rightIsInt := GetData[int](right)
+	leftList, leftIsList := GetData[[]json.RawMessage](left)
+	rightList, rightIsList := GetData[[]json.RawMessage](right)
 
 	if leftIsInt && rightIsInt {
 		if leftInt > rightInt {
