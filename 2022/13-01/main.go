@@ -24,7 +24,6 @@ func GetData[T any](d json.RawMessage) (T, bool) {
 }
 
 func solve(lines []string) int {
-	corruptPairs := []int{}
 	validPairs := []int{}
 	pairs := getPairs(lines)
 	packetPairs := getPacketPairs(pairs)
@@ -36,7 +35,7 @@ func solve(lines []string) int {
 		log.Printf(" left: %s", p[0])
 		log.Printf(" right: %s", p[1])
 		if corrupt, resolved := isCorrupt(idx, 0, p[0], p[1]); corrupt && resolved {
-			corruptPairs = append(corruptPairs, idx)
+			// no-op
 		} else if !corrupt && resolved {
 			validPairs = append(validPairs, idx)
 		} else {

@@ -20,8 +20,8 @@ const (
 
 func solve(lines []string) int {
 	m := map[int]map[int]struct{}{}
-	h := vector.V2{0, 0}
-	t := vector.V2{0, 0}
+	h := vector.V2{X: 0, Y: 0}
+	t := vector.V2{X: 0, Y: 0}
 
 	for _, ln := range lines {
 		parts := strings.Split(ln, " ")
@@ -40,7 +40,7 @@ func solve(lines []string) int {
 			separation := t.OrthoDistance(h)
 			distance := t.Distance(h)
 			if distance >= 2 {
-				t = translate(t, vector.V2{-separation.X, -separation.Y}, tailMovespeed)
+				t = translate(t, vector.V2{X: -separation.X, Y: -separation.Y}, tailMovespeed)
 			}
 		}
 	}
@@ -53,32 +53,6 @@ func solve(lines []string) int {
 	}
 
 	return len(positions)
-}
-
-func draw(m map[int]map[int]struct{}, h vector.V2, t vector.V2) {
-	for y := 6; y >= 0; y-- {
-		for x := 0; x < 6; x++ {
-			if x == h.X && y == h.Y {
-				fmt.Print("H")
-				continue
-			}
-			if x == t.X && y == t.Y {
-				fmt.Print("T")
-				continue
-			}
-
-			if _, ok := m[x]; ok {
-				if _, ok := m[x][y]; ok {
-					fmt.Print("#")
-				} else {
-					fmt.Print(".")
-				}
-			} else {
-				fmt.Print(".")
-			}
-		}
-		fmt.Println()
-	}
 }
 
 func translate(pos, dir vector.V2, max int) vector.V2 {
@@ -94,7 +68,7 @@ func translate(pos, dir vector.V2, max int) vector.V2 {
 		dir.Y = -max
 	}
 
-	return vector.V2{pos.X + dir.X, pos.Y + dir.Y}
+	return vector.V2{X: pos.X + dir.X, Y: pos.Y + dir.Y}
 }
 
 func move(pos vector.V2, dir string) vector.V2 {

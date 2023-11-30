@@ -56,7 +56,6 @@ func solve(lines []string) int {
 		parts := strings.Split(ln, " ")
 		dir := parts[0]
 		steps, _ := strconv.Atoi(parts[1])
-		h = knots[0]
 
 		for i := 0; i < steps; i++ {
 			if _, ok := m[t.pos.x]; !ok {
