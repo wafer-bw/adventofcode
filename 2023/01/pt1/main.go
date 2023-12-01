@@ -1,22 +1,24 @@
-// https://adventofcode.com/2022/day/1
-
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"log"
 	"strconv"
-
-	"github.com/wafer-bw/adventofcode/tools/pather"
-	"github.com/wafer-bw/adventofcode/tools/reader"
+	"strings"
 )
 
-const puzzleID string = "2023-01"
+var (
+	//go:embed input-sample.txt
+	SampleInput string
+	//go:embed input.txt
+	FullInput string
+)
 
-func solve(lines []string) int {
+func Solve(input string) int {
 	s := 0
 
-	for _, line := range lines {
+	for _, line := range strings.Split(input, "\n") {
 		numbers := []int{}
 		for _, ch := range line {
 			if n, err := strconv.Atoi(string(ch)); err == nil {
@@ -35,5 +37,6 @@ func solve(lines []string) int {
 }
 
 func main() {
-	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
+	log.Printf("sample: %d", Solve(SampleInput))
+	log.Printf("full: %d", Solve(FullInput))
 }

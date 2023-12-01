@@ -4,8 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-	"github.com/wafer-bw/adventofcode/tools/pather"
-	"github.com/wafer-bw/adventofcode/tools/reader"
 )
 
 func TestSolve(t *testing.T) {
@@ -13,10 +11,10 @@ func TestSolve(t *testing.T) {
 
 	t.Run("solve correctly using sample input", func(t *testing.T) {
 		t.Parallel()
-		require.Equal(t, 423, solve(reader.Read(pather.Path(puzzleID, true, true))))
+		require.Equal(t, 142, Solve(SampleInput))
 	})
 	t.Run("solve correctly using full input", func(t *testing.T) {
 		t.Parallel()
-		require.Equal(t, 54277, solve(reader.Read(pather.Path(puzzleID, false, true))))
+		require.Equal(t, 54390, Solve(FullInput))
 	})
 }

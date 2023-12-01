@@ -1,18 +1,19 @@
-// https://adventofcode.com/2022/day/1
-
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
-
-	"github.com/wafer-bw/adventofcode/tools/pather"
-	"github.com/wafer-bw/adventofcode/tools/reader"
 )
 
-const puzzleID string = "2023-01"
+var (
+	//go:embed input-sample.txt
+	SampleInput string
+	//go:embed input.txt
+	FullInput string
+)
 
 var words = map[string]int{
 	"one":   1,
@@ -26,20 +27,21 @@ var words = map[string]int{
 	"nine":  9,
 }
 
-func solve(lines []string) int {
+func main() {
+	log.Printf("sample: %d", Solve(SampleInput))
+	log.Printf("full: %d", Solve(FullInput))
+}
+
+func Solve(input string) int {
 	sum := 0
 
-	for _, line := range lines {
+	for _, line := range strings.Split(input, "\n") {
 		inc, _ := strconv.Atoi(fmt.Sprintf("%d%d", getDigit(line), getRevDigit(line)))
 		sum += inc
 
 	}
 
 	return sum
-}
-
-func main() {
-	log.Println(solve(reader.Read(pather.Path(puzzleID, false, false))))
 }
 
 func getDigit(s string) int {
