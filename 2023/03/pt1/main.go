@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/wafer-bw/always"
 )
 
 var (
@@ -43,9 +45,8 @@ func Solve(input string) int {
 	for row, line := range lines {
 		indices := numberPattern.FindAllStringIndex(line, -1)
 		for _, index := range indices {
-			n, _ := strconv.Atoi(line[index[0]:index[1]])
 			numbers = append(numbers, number{
-				value:  n,
+				value:  always.Accept(strconv.Atoi(line[index[0]:index[1]])),
 				row:    row,
 				start:  index[0],
 				finish: index[1],
