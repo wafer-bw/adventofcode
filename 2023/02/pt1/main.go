@@ -49,5 +49,5 @@ Game:
 
 func main() {
 	log.Printf("sample: %d", Solve(SampleInput))
-	// log.Printf("full: %d", Solve(FullInput))
+	log.Printf("full: %d", Solve(FullInput))
 }
