@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -86,61 +87,47 @@ func Solve(input string) int {
 		})
 	}
 
-	log.Println(names[Nature(0)])
-	for _, s := range seeds {
-		log.Printf("%d - %d", s.min, s.max)
-	}
-
-	for nat, c := range table {
-		log.Println(names[Nature(nat+1)])
-		for _, r := range c {
-			log.Printf("\t%d - %d", r.min, r.max)
-		}
+	for nat := range table {
+		slices.SortStableFunc(table[nat], func(a, b Range) int {
+			return a.min - b.min
+		})
 	}
 
 	translations := seeds
-	v := math.MaxInt64
-	for nat, c := range table {
-		log.Println(names[Nature(nat+1)])
+	for _, c := range table {
+		mutatedTranslations := []Range{}
 		for _, r := range c {
 			newTranslations := []Range{}
 			for _, t := range translations {
 				if t.max < r.min || t.min > r.max {
 					// fully outside range
-					newTranslations = append(newTranslations,
-						Range{min: t.min, max: t.max},
-					)
+					newTranslations = append(newTranslations, Range{min: t.min, max: t.max})
 				} else if t.min >= r.min && t.max <= r.max {
 					// fully inside range
-					newTranslations = append(newTranslations, Range{
-						min: t.min + r.mut,
-						max: t.max + r.mut,
-					})
+					mutatedTranslations = append(mutatedTranslations, Range{min: t.min + r.mut, max: t.max + r.mut})
 				} else if t.min < r.min && t.max <= r.max {
 					// partially inside range (left)
-					newTranslations = append(newTranslations,
-						Range{min: t.min, max: r.min - 1},             // outside
-						Range{min: r.min + r.mut, max: t.max + r.mut}, // inside
-					)
+					newTranslations = append(newTranslations, Range{min: t.min, max: r.min - 1})                     // outside
+					mutatedTranslations = append(mutatedTranslations, Range{min: r.min + r.mut, max: t.max + r.mut}) // inside
 				} else {
 					// partially inside range (right)
-					newTranslations = append(newTranslations,
-						Range{min: t.min + r.mut, max: r.max + r.mut}, // inside
-						Range{min: r.max + 1, max: t.max},             // outside
-					)
+					newTranslations = append(newTranslations, Range{min: r.max + 1, max: t.max})                     // outside
+					mutatedTranslations = append(mutatedTranslations, Range{min: t.min + r.mut, max: r.max + r.mut}) // inside
 				}
 			}
 			translations = newTranslations
 		}
-		for _, s := range translations {
-			log.Printf("%d - %d", s.min, s.max)
-		}
+		translations = append(translations, mutatedTranslations...)
 	}
 
+	v := math.MaxInt64
+	for _, t := range translations {
+		v = min(v, t.min)
+	}
 	return v
 }
 
 func main() {
 	log.Printf("sample: %d", Solve(SampleInput))
-	// log.Printf("full: %d", Solve(FullInput))
+	log.Printf("full: %d", Solve(FullInput))
 }
