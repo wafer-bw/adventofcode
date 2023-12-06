@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"math"
 	"regexp"
@@ -62,9 +61,17 @@ func Solve(input string) int {
 	for _, match := range seedPattern.FindAllString(lines[0], -1) {
 		parts := strings.Split(match, " ")
 		start := always.Accept(strconv.Atoi(parts[0]))
-		end := start + always.Accept(strconv.Atoi(parts[1]))
+		end := start + always.Accept(strconv.Atoi(parts[1])) - 1
 		seeds = append(seeds, Range{min: start, max: end})
 	}
+
+	// smallestSeed := math.MaxInt64
+	// for _, s := range seeds {
+	// 	if s.min < smallestSeed {
+	// 		smallestSeed = s.min
+	// 	}
+	// }
+	// seeds = append(seeds, Range{min: 0, max: smallestSeed - 1})
 
 	table := Table{}
 	for _, line := range lines[1:] {
@@ -87,18 +94,26 @@ func Solve(input string) int {
 		})
 	}
 
+	log.Println(names[Nature(0)])
+	for _, s := range seeds {
+		log.Printf("%d - %d", s.min, s.max)
+	}
+
+	for nat, c := range table {
+		log.Println(names[Nature(nat+1)])
+		for _, r := range c {
+			log.Printf("\t%d - %d", r.min, r.max)
+		}
+	}
+
 	translation := seeds
 	v := math.MaxInt64
-	for _, c := range table {
+	for nat, c := range table {
+		log.Println(names[Nature(nat+1)])
 		for _, r := range c {
 			removeTranslation := []int{}
 			addTranslation := []Range{}
 			for ti, t := range translation { // need to make the order of loop nesting correct.
-				log.Println(names[Nature(ti)])
-				for _, s := range translation {
-					log.Printf("%d - %d", s.min, s.max)
-				}
-				fmt.Println()
 				if t.max < r.min || t.min > r.max {
 					// fully outside range
 					continue
@@ -113,7 +128,7 @@ func Solve(input string) int {
 						Range{min: t.min, max: r.min - 1},             // outside
 						Range{min: r.min + r.mut, max: t.max + r.mut}, // inside
 					)
-				} else if t.min >= r.min && t.max > r.max {
+				} else {
 					// partially inside range (right)
 					removeTranslation = append(removeTranslation, ti)
 					addTranslation = append(addTranslation,
@@ -124,14 +139,10 @@ func Solve(input string) int {
 			}
 			translation = remove(translation, removeTranslation...)
 			translation = append(translation, addTranslation...)
-			for _, s := range translation {
-				log.Printf("%d - %d", s.min, s.max)
-			}
 		}
-	}
-
-	for _, s := range translation {
-		log.Printf("%d - %d", s.min, s.max)
+		for _, s := range translation {
+			log.Printf("%d - %d", s.min, s.max)
+		}
 	}
 
 	return v
