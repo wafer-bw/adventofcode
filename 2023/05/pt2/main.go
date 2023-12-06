@@ -65,14 +65,6 @@ func Solve(input string) int {
 		seeds = append(seeds, Range{min: start, max: end})
 	}
 
-	// smallestSeed := math.MaxInt64
-	// for _, s := range seeds {
-	// 	if s.min < smallestSeed {
-	// 		smallestSeed = s.min
-	// 	}
-	// }
-	// seeds = append(seeds, Range{min: 0, max: smallestSeed - 1})
-
 	table := Table{}
 	for _, line := range lines[1:] {
 		if strings.TrimSpace(line) == "" {
@@ -106,41 +98,41 @@ func Solve(input string) int {
 		}
 	}
 
-	translation := seeds
+	translations := seeds
 	v := math.MaxInt64
 	for nat, c := range table {
 		log.Println(names[Nature(nat+1)])
 		for _, r := range c {
-			removeTranslation := []int{}
-			addTranslation := []Range{}
-			for ti, t := range translation { // need to make the order of loop nesting correct.
+			newTranslations := []Range{}
+			for _, t := range translations {
 				if t.max < r.min || t.min > r.max {
 					// fully outside range
-					continue
+					newTranslations = append(newTranslations,
+						Range{min: t.min, max: t.max},
+					)
 				} else if t.min >= r.min && t.max <= r.max {
 					// fully inside range
-					translation[ti].min += r.mut
-					translation[ti].max += r.mut
+					newTranslations = append(newTranslations, Range{
+						min: t.min + r.mut,
+						max: t.max + r.mut,
+					})
 				} else if t.min < r.min && t.max <= r.max {
 					// partially inside range (left)
-					removeTranslation = append(removeTranslation, ti)
-					addTranslation = append(addTranslation,
+					newTranslations = append(newTranslations,
 						Range{min: t.min, max: r.min - 1},             // outside
 						Range{min: r.min + r.mut, max: t.max + r.mut}, // inside
 					)
 				} else {
 					// partially inside range (right)
-					removeTranslation = append(removeTranslation, ti)
-					addTranslation = append(addTranslation,
+					newTranslations = append(newTranslations,
 						Range{min: t.min + r.mut, max: r.max + r.mut}, // inside
 						Range{min: r.max + 1, max: t.max},             // outside
 					)
 				}
 			}
-			translation = remove(translation, removeTranslation...)
-			translation = append(translation, addTranslation...)
+			translations = newTranslations
 		}
-		for _, s := range translation {
+		for _, s := range translations {
 			log.Printf("%d - %d", s.min, s.max)
 		}
 	}
@@ -151,11 +143,4 @@ func Solve(input string) int {
 func main() {
 	log.Printf("sample: %d", Solve(SampleInput))
 	// log.Printf("full: %d", Solve(FullInput))
-}
-
-func remove[T any](slice []T, ids ...int) []T {
-	for i, idx := range ids {
-		slice = append(slice[:idx-i], slice[idx-i+1:]...)
-	}
-	return slice
 }
