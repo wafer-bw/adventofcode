@@ -15,4 +15,5 @@
 .vscode
 .idea
 
-tmp
+# Puzzle Input Files
+*.txt
