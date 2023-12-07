@@ -44,17 +44,6 @@ const (
 	NatureLocation
 )
 
-var names = map[Nature]string{
-	NatureSeed:       "seed",
-	NatureSoil:       "soil",
-	NatureFertilizer: "fertilizer",
-	NatureWater:      "water",
-	NatureLight:      "light",
-	NatureTemp:       "temp",
-	NatureHumidity:   "humidity",
-	NatureLocation:   "location",
-}
-
 func Solve(input string) int {
 	lines := strings.Split(input, "\n")
 
