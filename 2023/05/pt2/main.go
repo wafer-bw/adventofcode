@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"math"
 	"regexp"
@@ -104,7 +103,6 @@ func Solve(input string) int {
 					newTranslations = append(newTranslations, Range{min: r.max + 1, max: t.max})                     // outside
 					mutatedTranslations = append(mutatedTranslations, Range{min: t.min + r.mut, max: r.max + r.mut}) // inside
 				} else if t.min < r.min && t.max > r.max {
-					fmt.Println("here")
 					// left outside, middle inside, right outside
 					newTranslations = append(newTranslations, Range{min: t.min, max: r.min - 1})                     // outside (left)
 					mutatedTranslations = append(mutatedTranslations, Range{min: r.min + r.mut, max: r.max + r.mut}) // inside
