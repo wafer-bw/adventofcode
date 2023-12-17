@@ -15,7 +15,6 @@ func TestSolve(t *testing.T) {
 	})
 	t.Run("solve correctly using full input", func(t *testing.T) {
 		t.Parallel()
-		r := Solve(FullInput)
-		require.Equal(t, 248652697, r)
+		require.Equal(t, 248652697, Solve(FullInput))
 	})
 }
