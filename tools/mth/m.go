@@ -1,6 +1,8 @@
 // Package mth provides common math algorithms.
 package mth
 
+import "math"
+
 // GreatestCommonDivisor returns the greatest common divisor of a and b.
 func GreatestCommonDivisor(a, b int) int {
 	for b != 0 {
@@ -34,4 +36,8 @@ func Sum[T Numeric](s []T) T {
 // math operations.
 type Numeric interface {
 	int | int32 | int64 | int16 | int8 | float32 | float64
+}
+
+func IntAbs(x int) int {
+	return int(math.Abs(float64(x)))
 }
