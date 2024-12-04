@@ -46,42 +46,6 @@ func (g Grid) Search(word string, at vector.V2) int {
 	return total
 }
 
-func (g Grid) searchRight(word string, at vector.V2) int {
-	for i, char := range word {
-		if g.Pos(vector.V2{X: at.X + i, Y: at.Y}) != string(char) {
-			return 0
-		}
-	}
-	return 1
-}
-
-func (g Grid) searchDown(word string, at vector.V2) int {
-	for i, char := range word {
-		if g.Pos(vector.V2{X: at.X, Y: at.Y + i}) != string(char) {
-			return 0
-		}
-	}
-	return 1
-}
-
-func (g Grid) searchLeft(word string, at vector.V2) int {
-	for i, char := range word {
-		if g.Pos(vector.V2{X: at.X - i, Y: at.Y}) != string(char) {
-			return 0
-		}
-	}
-	return 1
-}
-
-func (g Grid) searchUp(word string, at vector.V2) int {
-	for i, char := range word {
-		if g.Pos(vector.V2{X: at.X, Y: at.Y - i}) != string(char) {
-			return 0
-		}
-	}
-	return 1
-}
-
 func (g Grid) searchUpRight(word string, at vector.V2) int {
 	for i, char := range word {
 		if g.Pos(vector.V2{X: at.X + i, Y: at.Y - i}) != string(char) {
