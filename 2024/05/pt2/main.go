@@ -61,7 +61,7 @@ func Solve(input string) int {
 		slices.SortStableFunc(update, func(a, b int) int {
 			return rulesMap.Compare(a, b)
 		})
-		if fmt.Sprint(orig) == fmt.Sprint(update) {
+		if fmt.Sprint(orig) != fmt.Sprint(update) {
 			s += update[len(update)/2]
 		}
 	}
