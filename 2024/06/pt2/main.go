@@ -4,7 +4,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"strings"
 
@@ -19,42 +18,6 @@ var (
 )
 
 type Map [][]Tile
-
-func (m Map) String() string {
-	str := ""
-	for _, row := range m {
-		strs := make([]string, len(row))
-		for i, tile := range row {
-			strs[i] = string(tile)
-		}
-		str += strings.Join(strs, "") + "\n"
-	}
-	return str
-}
-
-func (m Map) Copy() Map {
-	copyMap := make(Map, len(m))
-	for i := range m {
-		copyMap[i] = make([]Tile, len(m[i]))
-		copy(copyMap[i], m[i])
-	}
-	return copyMap
-}
-
-func (m Map) OverlayPlayer(p vector.V2, n int) {
-	copyMap := m.Copy()
-	copyMap[p.Y][p.X] = Tile(fmt.Sprint(n))
-	// fmt.Println(copyMap)
-	// time.Sleep(150 * time.Millisecond)
-}
-
-func (m Map) OverlayObstructions(obs map[vector.V2]struct{}) {
-	copyMap := m.Copy()
-	for pos := range obs {
-		copyMap[pos.Y][pos.X] = "O"
-	}
-	fmt.Println(copyMap)
-}
 
 type Tile string
 
@@ -145,12 +108,11 @@ func LoopTraverse(m Map, n int, pos, dir vector.V2) int {
 			dir = dir.RotateRight()
 		} else {
 			pos = next
-			m.OverlayPlayer(pos, n)
 		}
 	}
 }
 
 func main() {
 	log.Printf("sample: %d", Solve(SampleInput))
-	// log.Printf("full: %d", Solve(FullInput)) // brute force solution takes a long time to run.
+	log.Printf("full: %d", Solve(FullInput))
 }
