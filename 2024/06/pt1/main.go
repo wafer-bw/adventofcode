@@ -42,7 +42,7 @@ func Solve(input string) int {
 	s := 0
 	lines := strings.Split(input, "\n")
 
-	dir := vector.Cardinal2North // It's facing north to pos in both my inputs.
+	dir := vector.Cardinal2North // It's facing north to start in both my inputs.
 	pos := vector.V2{X: 0, Y: 0}
 	m := make(Map, len(lines))
 	for y, line := range lines {
