@@ -3,7 +3,6 @@ package main
 import (
 	_ "embed"
 	"log"
-	"math"
 	"strconv"
 	"strings"
 )
@@ -33,10 +32,7 @@ func Solve(input string) int {
 			values[i], _ = strconv.Atoi(valueString)
 		}
 
-		if resolve(x, values[0], 0, values) {
-			if s > math.MaxInt64-x {
-				panic("overflow")
-			}
+		if resolve(x, values[0], 1, values) {
 			s += x
 		}
 	}
@@ -45,14 +41,12 @@ func Solve(input string) int {
 }
 
 func resolve(ans, cumulative, idx int, values []int) bool {
-	if idx+1 == len(values) {
-		return false
+	if idx == len(values) {
+		return ans == cumulative
 	}
 	for _, opf := range operators {
-		c := opf(cumulative, values[idx+1])
-		if c == ans {
-			return true
-		} else if c > ans {
+		c := opf(cumulative, values[idx])
+		if c > ans {
 			continue
 		} else if resolve(ans, c, idx+1, values) {
 			return true
