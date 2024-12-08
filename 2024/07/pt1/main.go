@@ -52,6 +52,8 @@ func resolve(ans, cumulative, idx int, values []int) bool {
 		c := opf(cumulative, values[idx+1])
 		if c == ans {
 			return true
+		} else if c > ans {
+			continue
 		} else if ok := resolve(ans, c, idx+1, values); ok {
 			return true
 		}
