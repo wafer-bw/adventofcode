@@ -54,7 +54,7 @@ func resolve(ans, cumulative, idx int, values []int) bool {
 			return true
 		} else if c > ans {
 			continue
-		} else if ok := resolve(ans, c, idx+1, values); ok {
+		} else if resolve(ans, c, idx+1, values) {
 			return true
 		}
 	}
