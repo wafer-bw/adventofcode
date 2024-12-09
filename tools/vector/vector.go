@@ -24,6 +24,14 @@ func (a V2) OrthoDistance(b V2) V2 {
 	return V2{dx, dy}
 }
 
+// Not sure if "orthogonal slope" is a real term but the [V2] returned here is:
+// {X: run, Y: rise}
+func (a V2) OrthoSlope(b V2) V2 {
+	rise := b.Y - a.Y
+	run := b.X - a.X
+	return V2{X: run, Y: rise}
+}
+
 func (a V2) Distance(b V2) float64 {
 	dx := a.X - b.X
 	dy := a.Y - b.Y
