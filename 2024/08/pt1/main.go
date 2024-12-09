@@ -2,7 +2,6 @@ package main
 
 import (
 	_ "embed"
-	"fmt"
 	"log"
 	"strings"
 
@@ -75,7 +74,6 @@ func Solve(input string) int {
 			}
 
 			odist := antennaA.Pos.OrthoDistance(antennaB.Pos)
-			fmt.Println(antennaA, antennaB, odist)
 			antinode := antennaA.Pos.Add(odist)
 			if ok := m.AddAntinode(antinode); ok {
 				antinodes[antinode] = struct{}{}
