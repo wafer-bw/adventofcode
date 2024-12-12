@@ -44,26 +44,6 @@ type Tile struct {
 	Pos    vector.V2
 }
 
-func (t Tile) NonRegionDiagonalAdjacents(m Map) map[vector.V2]struct{} {
-	nonRegionAdjacents := map[vector.V2]struct{}{}
-	diagonalAdjacents := []vector.V2{
-		t.Pos.Add(vector.V2{X: 1, Y: 1}),
-		t.Pos.Add(vector.V2{X: -1, Y: 1}),
-		t.Pos.Add(vector.V2{X: -1, Y: -1}),
-		t.Pos.Add(vector.V2{X: 1, Y: -1}),
-	}
-
-	for _, adjacent := range diagonalAdjacents {
-		if m.OutOfBounds(adjacent) {
-			nonRegionAdjacents[adjacent] = struct{}{}
-		} else if m[adjacent.Y][adjacent.X].Region != t.Region {
-			nonRegionAdjacents[adjacent] = struct{}{}
-		}
-	}
-
-	return nonRegionAdjacents
-}
-
 func (t Tile) NonRegionAdjacents(m Map) map[vector.V2]struct{} {
 	nonRegionAdjacents := map[vector.V2]struct{}{}
 	adjacents := []vector.V2{
@@ -114,18 +94,8 @@ func (r Region) GetMinMaxCorners() (min vector.V2, max vector.V2) {
 	return
 }
 
-// P: 26
-// OC: 5
-// IC: 1
-// NCE: 12
-
-func (r *Region) CornersAndEdges(m Map) (int, int, int) {
+func (r *Region) NonCornerEdges(m Map) int {
 	min, max := r.GetMinMaxCorners()
-	nces := map[vector.V2]struct{}{}
-	ics := map[vector.V2]struct{}{}
-	ocs := map[vector.V2]struct{}{}
-
-	// non-corner edges
 	ncesc := 0
 	for y := min.Y; y <= max.Y; y++ {
 		for x := min.X; x <= max.X; x++ {
@@ -133,74 +103,15 @@ func (r *Region) CornersAndEdges(m Map) (int, int, int) {
 				continue
 			}
 			nras := m[y][x].NonRegionAdjacents(m)
-			for nra := range nras {
-				ncesc++
-				nces[nra] = struct{}{}
-			}
+			ncesc += len(nras)
 		}
 	}
 
-	// inner corners
-	for y := min.Y; y <= max.Y; y++ {
-		for x := min.X; x <= max.X; x++ {
-			pos := vector.V2{X: x, Y: y}
-			if m[y][x].Region != r {
-				continue
-			} else if _, ok := nces[pos]; ok {
-				continue
-			}
-			nrdas := m[y][x].NonRegionDiagonalAdjacents(m)
-			if len(nrdas) != 1 {
-				continue
-			}
-			for nrda := range nrdas {
-				if _, ok := nces[nrda]; ok {
-					continue
-				}
-				ics[nrda] = struct{}{}
-			}
-		}
-	}
-
-	// outer corners
-	for y := min.Y; y <= max.Y; y++ {
-		for x := min.X; x <= max.X; x++ {
-			pos := vector.V2{X: x, Y: y}
-			if m[y][x].Region != r {
-				continue
-			} else if _, ok := nces[pos]; ok {
-				continue
-			} else if _, ok := ics[pos]; ok {
-				continue
-			}
-			nrdas := m[y][x].NonRegionDiagonalAdjacents(m)
-			if len(nrdas) < 2 {
-				continue
-			}
-			for nrda := range nrdas {
-				if _, ok := nces[nrda]; ok {
-					continue
-				} else if _, ok := ics[nrda]; ok {
-					continue
-				}
-				ocs[nrda] = struct{}{}
-			}
-		}
-	}
-
-	return len(ocs), len(ics), ncesc
+	return ncesc
 }
 
 func (r *Region) Perimiter(m Map) int {
-	oc, ic, ed := r.CornersAndEdges(m)
-	_ = oc
-	_ = ic
-	perimiter := 0
-	// perimiter += oc
-	// perimiter += ic
-	perimiter += ed
-
-	return perimiter
+	return r.NonCornerEdges(m)
 }
 
 type RegionID int
@@ -236,11 +147,7 @@ func Solve(input string) int {
 		}
 	}
 
-	// fmt.Println(len(regions))
 	for _, region := range regions {
-		// min, max := region.GetMinMaxCorners()
-		// oc, ic, nce := region.CornersAndEdges(m)
-		// fmt.Println(region.Label, min, max, oc, ic, nce, region.Perimiter(m))
 		s += region.Perimiter(m) * region.Area()
 	}
 
@@ -249,9 +156,9 @@ func Solve(input string) int {
 
 func main() {
 	log.Printf("sample1: %d", Solve(SampleInput1))
-	// log.Printf("sample2: %d", Solve(SampleInput2))
-	// log.Printf("sample3: %d", Solve(SampleInput3))
-	// log.Printf("full: %d", Solve(FullInput))
+	log.Printf("sample2: %d", Solve(SampleInput2))
+	log.Printf("sample3: %d", Solve(SampleInput3))
+	log.Printf("full: %d", Solve(FullInput))
 }
 
 func floodFillIdentify(m Map, pos vector.V2, region *Region) {
