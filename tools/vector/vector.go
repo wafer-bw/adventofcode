@@ -6,11 +6,35 @@ import (
 )
 
 var (
-	Cardinal2North V2 = V2{X: 0, Y: -1}
-	Cardinal2South V2 = V2{X: 0, Y: 1}
-	Cardinal2East  V2 = V2{X: 1, Y: 0}
-	Cardinal2West  V2 = V2{X: -1, Y: 0}
+	Cardinal2North     V2 = V2{X: 0, Y: -1}
+	Cardinal2NorthEast V2 = V2{X: 1, Y: -1}
+	Cardinal2East      V2 = V2{X: 1, Y: 0}
+	Cardinal2SouthEast V2 = V2{X: 1, Y: 1}
+	Cardinal2South     V2 = V2{X: 0, Y: 1}
+	Cardinal2SouthWest V2 = V2{X: -1, Y: 1}
+	Cardinal2West      V2 = V2{X: -1, Y: 0}
+	Cardinal2NorthWest V2 = V2{X: -1, Y: -1}
 )
+
+// Up/Down/Left/Right
+var OrthoAdjacent2 []V2 = []V2{
+	Cardinal2North,
+	Cardinal2East,
+	Cardinal2South,
+	Cardinal2West,
+}
+
+// Up/UpRight/Right/DownRight/Down/DownLeft/Left/UpLeft
+var Adjacent2 []V2 = []V2{
+	Cardinal2North,
+	Cardinal2NorthEast,
+	Cardinal2East,
+	Cardinal2SouthEast,
+	Cardinal2South,
+	Cardinal2SouthWest,
+	Cardinal2West,
+	Cardinal2NorthWest,
+}
 
 type V2 struct{ X, Y int }
 
