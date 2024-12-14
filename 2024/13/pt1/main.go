@@ -28,11 +28,14 @@ type Machine struct {
 	Prize   vector.V2
 }
 
-func (m Machine) CalcL1X(y int) float64 {
-	return (float64(m.Prize.X) - float64(m.ButtonB.X)*float64(y)) / float64(m.ButtonA.X)
+// y = (8400 - 94x) / 22
+func (m Machine) CalcL1Y(x int) float64 {
+	return (float64(m.Prize.X) - float64(m.ButtonA.X)*float64(x)) / float64(m.ButtonB.X)
 }
-func (m Machine) CalcL2X(y int) float64 {
-	return (float64(m.Prize.Y) - float64(m.ButtonB.Y)*float64(y)) / float64(m.ButtonA.Y)
+
+// y = (5400 - 34x) / 67
+func (m Machine) CalcL2Y(x int) float64 {
+	return (float64(m.Prize.Y) - float64(m.ButtonA.Y)*float64(x)) / float64(m.ButtonB.Y)
 }
 
 func Solve(input string) int {
@@ -67,11 +70,11 @@ func Solve(input string) int {
 	}
 
 	for _, machine := range machines {
-		for y := 0; y <= MaxPlays; y++ {
-			x1 := machine.CalcL1X(y)
-			x2 := machine.CalcL2X(y)
-			if x1 == x2 {
-				s += int(x1)*ACost + y*BCost
+		for x := 0; x <= MaxPlays; x++ {
+			y1 := machine.CalcL1Y(x)
+			y2 := machine.CalcL2Y(x)
+			if y1 == y2 {
+				s += int(x)*ACost + int(y1)*BCost
 			}
 		}
 	}
