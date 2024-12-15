@@ -148,7 +148,7 @@ func Solve(input string, manual ...bool) int {
 			m.MaxX = len(line) - 1
 		} else if line == "" {
 			mapScan = false
-			m.MaxY = i
+			m.MaxY = i - 1
 			continue
 		}
 
