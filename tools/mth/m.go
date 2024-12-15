@@ -41,3 +41,10 @@ type Numeric interface {
 func IntAbs(x int) int {
 	return int(math.Abs(float64(x)))
 }
+
+// numerator / denominator
+func DivMod(numerator, denominator int) (quotient, remainder int) {
+	quotient = numerator / denominator
+	remainder = numerator % denominator
+	return
+}
