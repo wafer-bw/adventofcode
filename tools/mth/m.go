@@ -42,9 +42,16 @@ func IntAbs(x int) int {
 	return int(math.Abs(float64(x)))
 }
 
-// numerator / denominator
-func DivMod(numerator, denominator int) (quotient, remainder int) {
-	quotient = numerator / denominator
-	remainder = numerator % denominator
-	return
+// PMod returns non-negative solution to x % d.
+// -26%7 = 2
+// https://www.wolframalpha.com/input?i=-26%257
+func PMod(x, d int) int {
+	x = x % d
+	if x >= 0 {
+		return x
+	}
+	if d < 0 {
+		return x - d
+	}
+	return x + d
 }

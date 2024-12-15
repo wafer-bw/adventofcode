@@ -38,6 +38,10 @@ var Adjacent2 []V2 = []V2{
 
 type V2 struct{ X, Y int }
 
+func (a V2) Mul(b int) V2 {
+	return V2{X: a.X * b, Y: a.Y * b}
+}
+
 func (a V2) String() string {
 	return fmt.Sprintf("(%d, %d)", a.X, a.Y)
 }
