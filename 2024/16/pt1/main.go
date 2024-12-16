@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"log"
+	"math"
 	"slices"
 	"strings"
 
@@ -140,20 +141,25 @@ func Solve(input string) int {
 		}
 	}
 
-	path, distance, found := astar.Path(m.Region[start][vector.Cardinal2East], m.Region[end][vector.Cardinal2North]) // TODO: <--- need to check distance to endings from all possible directions.
-	if !found {
-		panic("no path found")
+	mdistance := math.MaxInt64
+	for _, dir := range vector.OrthoAdjacent2 {
+		path, distance, found := astar.Path(m.Region[start][vector.Cardinal2East], m.Region[end][dir])
+		if found {
+			mdistance = min(mdistance, int(distance))
+		}
+
+		// Visualization stuff:
+		for _, p := range path {
+			t := p.(Tile)
+			mp := m.Region[t.Pos][vector.Cardinal2East]
+			mp.Type = TileTypePath
+			mp.Dir = t.Dir
+			m.Region[t.Pos][vector.Cardinal2East] = mp
+		}
+		// fmt.Println(m.String())
 	}
 
-	for _, p := range path {
-		t := p.(Tile)
-		mp := m.Region[t.Pos][vector.Cardinal2East]
-		mp.Type = TileTypePath
-		mp.Dir = t.Dir
-		m.Region[t.Pos][vector.Cardinal2East] = mp
-	}
-
-	return int(distance)
+	return mdistance
 }
 
 func main() {
