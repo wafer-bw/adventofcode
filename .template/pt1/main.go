@@ -3,15 +3,16 @@ package main
 import (
 	_ "embed"
 	"log"
+	"slices"
 	"strings"
+
+	"github.com/wafer-bw/adventofcode/tools/test"
 )
 
-var (
-	//go:embed input-sample.txt
-	SampleInput string
-	//go:embed input.txt
-	FullInput string
-)
+//go:embed inputs.txt
+var Inputs string
+
+var Cases test.Cases = test.GetCases(Inputs)
 
 func Solve(input string) int {
 	s := 0
@@ -26,6 +27,11 @@ func Solve(input string) int {
 }
 
 func main() {
-	log.Printf("sample: %d", Solve(SampleInput))
-	log.Printf("full: %d", Solve(FullInput))
+	filter := []int{}
+	for i, c := range Cases {
+		if slices.Contains(filter, i) {
+			continue
+		}
+		log.Printf("case=%d expect=%d got=%d", i, c.Answer, Solve(c.Input))
+	}
 }
