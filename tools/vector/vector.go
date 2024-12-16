@@ -93,6 +93,17 @@ func (a V2) ToDir() string {
 	}
 }
 
+func (a V2) Rot(dir RotateDir) V2 {
+	switch dir {
+	case RotateDirRight:
+		return a.RotateRight()
+	case RotateDirLeft:
+		return a.RotateLeft()
+	default:
+		panic("unknown rotation direction")
+	}
+}
+
 func (a V2) RotateRight() V2 {
 	cardinalTurnMap := map[V2]V2{
 		Cardinal2North: Cardinal2East,
@@ -103,6 +114,23 @@ func (a V2) RotateRight() V2 {
 	return cardinalTurnMap[a]
 }
 
+func (a V2) RotateLeft() V2 {
+	cardinalTurnMap := map[V2]V2{
+		Cardinal2North: Cardinal2West,
+		Cardinal2West:  Cardinal2South,
+		Cardinal2South: Cardinal2East,
+		Cardinal2East:  Cardinal2North,
+	}
+	return cardinalTurnMap[a]
+}
+
 func (a V2) Translate(n int, dir V2) V2 {
 	return V2{a.X + n*dir.X, a.Y + n*dir.Y}
 }
+
+type RotateDir int
+
+const (
+	RotateDirRight RotateDir = iota
+	RotateDirLeft
+)
