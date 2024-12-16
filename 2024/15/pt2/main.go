@@ -38,6 +38,10 @@ type MoveAction struct {
 	To   vector.V2
 }
 
+func (ma MoveAction) String() string {
+	return fmt.Sprintf("%s -> %s", ma.From, ma.To)
+}
+
 type Map struct {
 	MaxX    int
 	MaxY    int
@@ -76,21 +80,6 @@ func (m Map) EmptyTowards(p, d vector.V2, mas []MoveAction) ([]MoveAction, bool)
 		mas, ok := m.EmptyTowards(dst, d, mas)
 		return mas, ok
 	} else if (d == vector.Cardinal2North || d == vector.Cardinal2South) && (t.Type == TileTypeBox1 || t.Type == TileTypeBox2) {
-
-		// ###################
-		// ##....[]....[]..[]#
-		// ##............[]..#
-		// ##..[][]....[]..[]#
-		// ##...[].......[]..#
-		// ##[]##....[]......#
-		// ##[]......[]..[]..#
-		// ##..[][]..@[].[][]#
-		// ##........[]......#
-		// ###################
-		// ^ <-- going up next
-		//
-		// TODO: the above situation does not seem to produce the correct move action list.
-
 		var dst2 vector.V2
 		if t.Type == TileTypeBox1 {
 			dst2 = dst.Add(vector.V2{X: 1})
@@ -110,8 +99,13 @@ func (m Map) EmptyTowards(p, d vector.V2, mas []MoveAction) ([]MoveAction, bool)
 }
 
 func (m *Map) PerformMoves(mas []MoveAction) {
+	performed := map[string]struct{}{}
 	for len(mas) != 0 {
 		for i, ma := range mas {
+			if _, ok := performed[ma.String()]; ok {
+				mas = append(mas[:i], mas[i+1:]...)
+				break
+			}
 			if m.Region[ma.To].Type == TileTypeOpen {
 				m.Region[ma.To] = m.Region[ma.From]
 				if m.Region[ma.To].Type == TileTypeRobot {
@@ -119,6 +113,7 @@ func (m *Map) PerformMoves(mas []MoveAction) {
 				}
 				m.Region[ma.From] = Tile{Type: TileTypeOpen}
 				mas = append(mas[:i], mas[i+1:]...)
+				performed[ma.String()] = struct{}{}
 				break
 			}
 
@@ -235,7 +230,7 @@ func Solve(input string, manual ...bool) int {
 }
 
 func main() {
-	// log.Printf("sample1: %d", Solve(SampleInput1))
-	log.Printf("sample2: %d", Solve(SampleInput2, true))
-	// log.Printf("full: %d", Solve(FullInput))
+	log.Printf("sample1: %d", Solve(SampleInput1))
+	log.Printf("sample2: %d", Solve(SampleInput2))
+	log.Printf("full: %d", Solve(FullInput))
 }
