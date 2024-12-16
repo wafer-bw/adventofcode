@@ -46,6 +46,12 @@ func (a V2) String() string {
 	return fmt.Sprintf("(%d, %d)", a.X, a.Y)
 }
 
+func (a V2) ManhattanDistance(b V2) float64 {
+	dx := math.Abs(float64(a.X - b.X))
+	dy := math.Abs(float64(a.Y - b.Y))
+	return dx + dy
+}
+
 func (a V2) OrthoDistance(b V2) V2 {
 	dx := a.X - b.X
 	dy := a.Y - b.Y
@@ -90,6 +96,21 @@ func (a V2) ToDir() string {
 		return "right"
 	default:
 		return "unknown"
+	}
+}
+
+func (a V2) ToDirSymbol() string {
+	switch {
+	case a.X == 0 && a.Y == -1:
+		return "^"
+	case a.X == 0 && a.Y == 1:
+		return "v"
+	case a.X == -1 && a.Y == 0:
+		return "<"
+	case a.X == 1 && a.Y == 0:
+		return ">"
+	default:
+		return "?"
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/wafer-bw/adventofcode/tools/astar"
 	"github.com/wafer-bw/adventofcode/tools/test"
 	"github.com/wafer-bw/adventofcode/tools/vector"
 )
@@ -21,7 +22,7 @@ const (
 )
 
 type Map struct {
-	Region   map[vector.V2]Tile
+	Region   map[vector.V2]map[vector.V2]Tile // Pos->Rotation->Tile
 	Maximums vector.V2
 }
 
@@ -29,8 +30,8 @@ func (m Map) String() string {
 	s := "\n"
 	for y := 0; y <= m.Maximums.Y; y++ {
 		for x := 0; x <= m.Maximums.X; x++ {
-			if t, ok := m.Region[vector.V2{X: x, Y: y}]; ok {
-				s += string(t.Type)
+			if t, ok := m.Region[vector.V2{X: x, Y: y}][vector.Cardinal2East]; ok {
+				s += t.String()
 			}
 		}
 		s += "\n"
@@ -40,10 +41,65 @@ func (m Map) String() string {
 
 type Tile struct {
 	Type TileType
+	Map  *Map
+	Pos  vector.V2 // position
+	Dir  vector.V2 // direction // N,S,E,W.
+}
+
+func (t Tile) String() string {
+	if t.Type == TileTypePath {
+		return t.Dir.ToDirSymbol()
+	}
+	return string(t.Type)
 }
 
 func (t Tile) Occupiable() bool {
 	return t.Type != TileTypeWall
+}
+
+func (t Tile) Neighbors() []astar.Pather {
+	neighbors := []astar.Pather{}
+	for _, dir := range vector.OrthoAdjacent2 {
+		if neighbor, ok := t.Map.Region[t.Pos.Add(dir)][dir]; ok && neighbor.Occupiable() {
+			neighbors = append(neighbors, neighbor)
+		}
+	}
+	return neighbors
+}
+
+func (t Tile) NeighborCost(to astar.Pather) float64 {
+	toT := to.(Tile)
+
+	c := 1
+	facing := t.Dir
+	approach := toT.Pos.Sub(t.Pos)
+
+	if facing == approach {
+		return float64(c)
+	}
+
+	facing = t.Dir
+	for i := range 2 {
+		facing = facing.Rot(vector.RotateDirRight)
+		if facing == approach {
+			return float64(c + ((i + 1) * RotateCost))
+		}
+	}
+
+	facing = t.Dir
+	for i := range 2 {
+		facing := facing.Rot(vector.RotateDirLeft)
+		if facing == approach {
+			return float64(c + ((i + 1) * RotateCost))
+		}
+	}
+
+	panic("no path neighbor cost found")
+}
+
+func (t Tile) EstimatedCost(to astar.Pather) float64 {
+	toT := to.(Tile)
+	return t.Pos.ManhattanDistance(toT.Pos)
 }
 
 type TileType string
@@ -53,51 +109,51 @@ const (
 	TileTypeWall  TileType = "#"
 	TileTypeEnd   TileType = "E"
 	TileTypeStart TileType = "S"
+	TileTypePath  TileType = "*"
 )
 
-type Player struct {
-	Fac vector.V2 // facing
-	Pos vector.V2 // position
-	Spd int       // speed
-
-	Cost int
-}
-
-// velocity
-func (p Player) Vel() vector.V2 {
-	return p.Fac.Mul(p.Spd)
-}
-
-// rotate
-func (p *Player) Rot(dir vector.RotateDir) {
-	p.Cost += RotateCost
-	p.Fac = p.Fac.Rot(dir)
-}
-
-// move
-func (p *Player) Mov() {
-	p.Cost += MoveCost
-	p.Pos = p.Pos.Add(p.Vel())
-}
-
 func Solve(input string) int {
-	s := 0
-
 	lines := strings.Split(input, "\n")
-	m := Map{Region: make(map[vector.V2]Tile, len(lines)*len(lines[0]))}
+	var start, end vector.V2
+	m := Map{Region: map[vector.V2]map[vector.V2]Tile{}}
 	for y, line := range lines {
 		if y == 0 {
 			m.Maximums.X = (len(line) - 1)
 			m.Maximums.Y = len(lines) - 1
 		}
-		for x, row := range strings.Split(line, "") {
-			m.Region[vector.V2{X: x, Y: y}] = Tile{Type: TileType(row)}
+		for x, cell := range strings.Split(line, "") {
+			p := vector.V2{X: x, Y: y}
+			tt := TileType(cell)
+			if tt == TileTypeStart {
+				start = p
+				tt = TileTypeEmpty
+			} else if tt == TileTypeEnd {
+				end = p
+				tt = TileTypeEmpty
+			}
+			for _, d := range vector.Adjacent2 {
+				if _, ok := m.Region[p]; !ok {
+					m.Region[p] = map[vector.V2]Tile{}
+				}
+				m.Region[p][d] = Tile{Type: tt, Map: &m, Pos: p, Dir: d}
+			}
 		}
 	}
 
-	log.Println(m.String())
+	path, distance, found := astar.Path(m.Region[start][vector.Cardinal2East], m.Region[end][vector.Cardinal2North]) // TODO: <--- need to check distance to endings from all possible directions.
+	if !found {
+		panic("no path found")
+	}
 
-	return s
+	for _, p := range path {
+		t := p.(Tile)
+		mp := m.Region[t.Pos][vector.Cardinal2East]
+		mp.Type = TileTypePath
+		mp.Dir = t.Dir
+		m.Region[t.Pos][vector.Cardinal2East] = mp
+	}
+
+	return int(distance)
 }
 
 func main() {
