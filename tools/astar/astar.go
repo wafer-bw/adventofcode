@@ -35,7 +35,8 @@ func (nm nodeMap) get(p Pather) *node {
 	return n
 }
 
-func Path(start, end Pather) (path []Pather, cost float64, found bool) {
+func Path(start, end Pather) (path []Pather, cost float64, visited map[Pather]float64, found bool) {
+	visited = map[Pather]float64{}
 	nm := nodeMap{}
 	nq := &priorityQueue{}
 	heap.Init(nq)
@@ -58,7 +59,7 @@ func Path(start, end Pather) (path []Pather, cost float64, found bool) {
 				p = append(p, curr.pather)
 				curr = curr.parent
 			}
-			return p, current.cost, true
+			return p, current.cost, visited, true
 		}
 
 		for _, neighbor := range current.pather.Neighbors() {
@@ -73,6 +74,7 @@ func Path(start, end Pather) (path []Pather, cost float64, found bool) {
 			}
 
 			if !neighborNode.open && !neighborNode.closed {
+				visited[neighbor] = cost
 				neighborNode.cost = cost
 				neighborNode.open = true
 				neighborNode.rank = cost + neighbor.EstimatedCost(end)

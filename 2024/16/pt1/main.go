@@ -143,7 +143,7 @@ func Solve(input string) int {
 
 	mdistance := math.MaxInt64
 	for _, dir := range vector.OrthoAdjacent2 {
-		path, distance, found := astar.Path(m.Region[start][vector.Cardinal2East], m.Region[end][dir])
+		path, distance, _, found := astar.Path(m.Region[start][vector.Cardinal2East], m.Region[end][dir])
 		if found {
 			mdistance = min(mdistance, int(distance))
 		}
