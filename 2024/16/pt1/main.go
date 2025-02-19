@@ -7,7 +7,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/wafer-bw/adventofcode/tools/astar"
+	"github.com/wafer-bw/adventofcode/2024/16/astar"
 	"github.com/wafer-bw/adventofcode/tools/test"
 	"github.com/wafer-bw/adventofcode/tools/vector"
 )
@@ -80,10 +80,10 @@ func (t Tile) NeighborCost(to astar.Pather) float64 {
 	}
 
 	facing = t.Dir
-	for i := range 2 {
+	for range 2 {
 		facing = facing.Rot(vector.RotateDirRight)
 		if facing == approach {
-			return float64(c + ((i + 1) * RotateCost))
+			return float64(c + RotateCost)
 		}
 	}
 

@@ -59,6 +59,12 @@ func Path(start, end Pather) (path []Pather, cost float64, visited map[Pather]fl
 				p = append(p, curr.pather)
 				curr = curr.parent
 			}
+
+			visited := map[Pather]float64{}
+			for _, n := range nm {
+				visited[n.pather] = n.cost
+			}
+
 			return p, current.cost, visited, true
 		}
 
@@ -69,15 +75,15 @@ func Path(start, end Pather) (path []Pather, cost float64, visited map[Pather]fl
 				if neighborNode.open {
 					heap.Remove(nq, neighborNode.index)
 				}
+				neighborNode.cost = cost
 				neighborNode.open = false
 				neighborNode.closed = false
 			}
 
 			if !neighborNode.open && !neighborNode.closed {
-				visited[neighbor] = cost
 				neighborNode.cost = cost
 				neighborNode.open = true
-				neighborNode.rank = cost + neighbor.EstimatedCost(end)
+				neighborNode.rank = cost // Use only the cost for ranking
 				neighborNode.parent = current
 				heap.Push(nq, neighborNode)
 			}

@@ -8,7 +8,8 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/wafer-bw/adventofcode/tools/astar"
+	"github.com/wafer-bw/adventofcode/2024/16/astar"
+	"github.com/wafer-bw/adventofcode/tools/stack"
 	"github.com/wafer-bw/adventofcode/tools/test"
 	"github.com/wafer-bw/adventofcode/tools/vector"
 )
@@ -88,20 +89,6 @@ func (t Tile) Neighbors() []astar.Pather {
 	return neighbors
 }
 
-func (t Tile) ExtraCost(to, facing vector.V2, c float64) float64 {
-	if !t.Map.VisitedMode {
-		return c
-	}
-
-	_, ok1 := t.Map.Visited[to]
-	_, ok2 := t.Map.Visited[to][facing]
-	if ok1 && ok2 {
-		return c + 1
-	}
-
-	return c
-}
-
 func (t Tile) NeighborCost(to astar.Pather) float64 {
 	toT := to.(Tile)
 	c := 1
@@ -109,21 +96,19 @@ func (t Tile) NeighborCost(to astar.Pather) float64 {
 	approach := toT.Pos.Sub(t.Pos)
 
 	if facing == approach {
-		return t.ExtraCost(toT.Pos, facing, float64(c))
+		return float64(c)
 	}
 
-	// there is likely a better way to do this block.
 	facingRight := t.Dir
+	facingRight = facingRight.Rot(vector.RotateDirRight)
+	if facingRight == approach {
+		return float64(c + (RotateCost))
+	}
+
 	facingLeft := t.Dir
-	for i := 1; i <= 2; i++ {
-		facingRight = facingRight.Rot(vector.RotateDirRight)
-		if facingRight == approach {
-			return t.ExtraCost(toT.Pos, facingRight, float64(c+(i*RotateCost)))
-		}
-		facingLeft = facingLeft.Rot(vector.RotateDirLeft)
-		if facingLeft == approach {
-			return t.ExtraCost(toT.Pos, facingLeft, float64(c+(i*RotateCost)))
-		}
+	facingLeft = facingLeft.Rot(vector.RotateDirLeft)
+	if facingLeft == approach {
+		return float64(c + (RotateCost))
 	}
 
 	return math.MaxFloat32
@@ -172,97 +157,43 @@ func (s Seats) Add(path []astar.Pather) map[string]vector.V2 {
 	return s
 }
 
-func CostToRotate(t, f vector.V2) int {
-	facing := t
-	approach := f
-	for i := range 2 {
-		facing := facing.Rot(vector.RotateDirLeft)
-		if facing == approach {
-			return (i + 1) * RotateCost
+func (m Map) Altpaths(p1 astar.Pather, scores map[astar.Pather]float64) map[vector.V2]struct{} {
+	step := 0
+	stk := &[]Tile{p1.(Tile)}
+	seats := map[vector.V2]struct{}{p1.(Tile).Pos: {}}
+	visited := map[string]struct{}{}
+
+	for stack.Len(stk) > 0 {
+		step++
+		t1 := stack.Pop(stk)
+
+		if _, ok := visited[t1.Key()]; ok {
+			continue
 		}
-	}
+		visited[t1.Key()] = struct{}{}
 
-	facing = t
-	for i := range 2 {
-		facing = facing.Rot(vector.RotateDirRight)
-		if facing == approach {
-			return (i + 1) * RotateCost
-		}
-	}
+		faceLeft := t1.Dir.Rot(vector.RotateDirLeft)
+		faceRight := t1.Dir.Rot(vector.RotateDirRight)
 
-	panic("no cost found")
-}
-
-func ScorePath(path []astar.Pather) int {
-	s := -1
-	for i, p := range path {
-		s++
-		if i == len(path)-1 {
-			break
-		}
-		t := p.(Tile)
-		next := path[i+1].(Tile)
-		if t.Dir != next.Dir {
-			s += CostToRotate(t.Dir, next.Dir)
-		}
-	}
-	return s
-}
-
-func (m *Map) AltpathPeek(p1 astar.Pather, step, score int, visited map[vector.V2]struct{}, chain map[string]struct{}) (map[vector.V2]struct{}, bool) {
-	foundPath := false
-	for _, p2 := range p1.Neighbors() {
-		for _, dir := range vector.OrthoAdjacent2 {
-			t1 := p1.(Tile)
-			t2 := p2.(Tile)
-			t2.Dir = dir
-
-			// anti-loop
-			if _, ok := chain[t2.InverseKey()]; ok {
-				continue
-			}
-			chain[t1.Key()] = struct{}{}
-
-			cost := int(t1.NeighborCost(t2))
-			// fmt.Println(step, t1.Pos, t1.Dir.ToDirSymbol(), t2.Pos, t2.Dir.ToDirSymbol(), cost, score, len(visited))
-			// fmt.Scanln()
-
-			if t2.Pos == m.Start /*&& t2.Dir == StartDir.Neg()*/ {
-				fmt.Println("found end", len(visited), len(chain))
-				return visited, true
-			} else if score <= 0 {
-				return nil, false
-			} else if score > 0 {
-				nap := map[vector.V2]struct{}{}
-				for k, v := range visited {
-					nap[k] = v
-				}
-				nap[t1.Pos] = struct{}{}
-				nap[t2.Pos] = struct{}{}
-				ap, ok := m.AltpathPeek(t2, step+1, score-cost, nap, chain)
-				if ok {
-					for k, v := range ap {
-						visited[k] = v
-					}
-					foundPath = true
-				}
+		// these values may look weird because we are going in reverse.
+		for _, t2 := range []Tile{
+			m.Region[t1.Pos.Add(t1.Dir.Neg())][t1.Dir],      // forward
+			m.Region[t1.Pos.Add(faceLeft.Neg())][faceRight], // left
+			m.Region[t1.Pos.Add(faceRight.Neg())][faceLeft], // right
+			m.Region[t1.Pos.Add(t1.Dir.Neg())][faceRight],   // forwardLeft
+			m.Region[t1.Pos.Add(t1.Dir.Neg())][faceLeft],    // forwardRight
+		} {
+			cost := t2.NeighborCost(t1)
+			t1Score := scores[m.Region[t1.Pos][t1.Dir]]
+			t2Score := scores[m.Region[t2.Pos][t2.Dir]]
+			if t1Score-cost == t2Score {
+				stack.Push(stk, t2)
+				seats[t2.Pos] = struct{}{}
 			}
 		}
 	}
 
-	if foundPath {
-		return visited, true
-	}
-	return nil, false
-}
-
-func PathString(path []astar.Pather) string {
-	s := ""
-	for _, p := range path {
-		t := p.(Tile)
-		s += t.Pos.String()
-	}
-	return s
+	return seats
 }
 
 func Solve(input string) int {
@@ -297,29 +228,18 @@ func Solve(input string) int {
 
 	// find best path
 	mpath := []astar.Pather{}
-	// mscores := map[astar.Pather]float64{}
+	mscores := map[astar.Pather]float64{}
 	mdistance := math.MaxInt64
-	for _, dir := range vector.OrthoAdjacent2 {
-		if path, distance, _, found := astar.Path(m.Region[start][vector.Cardinal2East], m.Region[end][dir]); found {
-			mdistance = min(mdistance, int(distance))
-			mpath = path
-			// mscores = scores
-		}
+	if path, distance, scores, found := astar.Path(m.Region[start][StartDir], m.Region[end][EndDir]); found {
+		mdistance = min(mdistance, int(distance))
+		mpath = path
+		mscores = scores
 	}
 	fmt.Println("cost", mdistance)
 
-	// // view scores by step
-	// why are these scores higher than distance?
-	// for _, p := range mpath {
-	// 	fmt.Println(mscores[p])
-	// }
-
 	t1 := mpath[0].(Tile)
-	t1.Dir = EndDir.Neg()
-	visited, ok := m.AltpathPeek(t1, 0, int(mdistance), map[vector.V2]struct{}{}, map[string]struct{}{})
-	if !ok {
-		panic("no path found")
-	}
+	t1.Dir = EndDir
+	visited := m.Altpaths(t1, mscores)
 
 	for pos := range visited {
 		mp := m.Region[pos][vector.Cardinal2East]
@@ -331,10 +251,8 @@ func Solve(input string) int {
 	return len(visited)
 }
 
-// full input answer is 497 < x < 604
-
 func main() {
-	filter := []int{1, 2}
+	filter := []int{}
 	for i, c := range Cases {
 		if slices.Contains(filter, i) {
 			continue

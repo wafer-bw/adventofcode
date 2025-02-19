@@ -1,5 +1,9 @@
 package stack
 
+func Len[T any](slice *[]T) int {
+	return len(*slice)
+}
+
 func Push[T any](slice *[]T, i T) {
 	*slice = append(*slice, i)
 }
